@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { addToDb, getStoredCard } from '../../utilities/fakedb';
+import Cart from './Cart/Cart';
 import Product from './Product/Products';
-import Products from './Product/Products';
 import './Shop.css'
 
 const Shop = () => {
@@ -10,13 +11,40 @@ const Shop = () => {
     useEffect( () =>{
        fetch('products.json') 
        .then(res=> res.json())
-       .then(data => setProducts(data))
-    }, [])
-    const handleAddToCart = (product) =>{
-        console.log(product);
-        // cart.push(product);
-        const newCart = [...cart, product];
+       .then(data => setProducts(data));
+    }, []);
+
+    useEffect(() => {
+        const storedCart = getStoredCard();
+        const saveCart = [];
+        for(const id in storedCart){
+            const addedProduct = Products.find(product => product.id === id);
+            if(addedProduct){
+                const quantity = storedCart[id];
+            addedProduct.quantity = quantity;
+            
+            saveCart.push(addedProduct);
+         }
+    }
+       
+   setCart(saveCart);
+    },[Products])
+     
+    const handleAddToCart = (selectedproduct) =>{   
+        console.log(selectedproduct);
+        let newCart = [];
+        const exists= cart.find(product =>product.id === selectedproduct.id);
+        if(!exists){
+            selectedproduct.quantity = 1;
+            newCart = [...cart, selectedproduct];
+        }
+        else{
+            const rest = cart.filter(product =>product.id !== selectedproduct.id);
+            exists.quantity = exists.quantity + 1;
+        }
+      
         setCart(newCart);
+        addToDb(selectedproduct.id);
     }
     return (
         <div className='shop-container'>
@@ -31,8 +59,7 @@ const Shop = () => {
             
             </div>
             <div className="cart-container">
-                <h4>Order Summary</h4>
-                <p>Selected Items: {cart.length}</p>
+             <Cart cart={cart}></Cart>
             </div>
         </div>
     );
