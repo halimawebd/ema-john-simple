@@ -1,24 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { useLoaderData } from 'react-router-dom';
 import { addToDb, getStoredCard } from '../../utilities/fakedb';
 import Cart from './Cart/Cart';
 import Product from './Product/Products';
 import './Shop.css'
 
 const Shop = () => {
-    const [Products, setProducts] = useState([]);
+    const products = useLoaderData();
     const [cart, setCart] = useState([]);
 
-    useEffect( () =>{
-       fetch('products.json') 
-       .then(res=> res.json())
-       .then(data => setProducts(data));
-    }, []);
-
+ 
     useEffect(() => {
         const storedCart = getStoredCard();
         const saveCart = [];
         for(const id in storedCart){
-            const addedProduct = Products.find(product => product.id === id);
+            const addedProduct = products.find(product => product.id === id);
             if(addedProduct){
                 const quantity = storedCart[id];
             addedProduct.quantity = quantity;
@@ -28,7 +24,7 @@ const Shop = () => {
     }
        
    setCart(saveCart);
-    },[Products])
+    },[products])
      
     const handleAddToCart = (selectedproduct) =>{   
         console.log(selectedproduct);
@@ -41,6 +37,7 @@ const Shop = () => {
         else{
             const rest = cart.filter(product =>product.id !== selectedproduct.id);
             exists.quantity = exists.quantity + 1;
+            newCart = [...rest,exists];
         }
       
         setCart(newCart);
@@ -50,7 +47,7 @@ const Shop = () => {
         <div className='shop-container'>
             <div className="products-container">
              {
-             Products.map(product=><Product 
+             products.map(product=><Product 
                 key={product.id}
                 product={product}
                 handleAddToCart={handleAddToCart}
